@@ -10,6 +10,7 @@ import tweepy
 from datetime import timedelta
 from config import CONFIG
 from urllib3.exceptions import ProtocolError
+import sys
 
 CK = CONFIG["CONSUMER_KEY"]     # Consumer Key
 CS = CONFIG["CONSUMER_SECRET"]  # Consumer Secret
@@ -22,6 +23,7 @@ def doRetweet(tweetId):
     except Exception as e:
         print('------------- Exception -----------------')
         print(e)
+        sys.stdout.flush()
 
 # StreamListenerを継承するクラスListener作成
 class Listener(tweepy.StreamListener):
@@ -34,6 +36,7 @@ class Listener(tweepy.StreamListener):
             print("{name}({screen}) {created} via {src} retweeted={retweeted}\n".format(
                 name=status.author.name, screen=status.author.screen_name,
                 created=status.created_at, src=status.source, retweeted=status.retweeted))
+            sys.stdout.flush()
 
             doRetweet(status.id)
 
@@ -41,10 +44,12 @@ class Listener(tweepy.StreamListener):
 
     def on_error(self, status_code):
         print('エラー発生: ' + str(status_code))
+        sys.stdout.flush()
         return True
 
     def on_timeout(self):
         print('Timeout...')
+        sys.stdout.flush()
         return True
 
 # Twitterオブジェクトの生成
@@ -61,7 +66,9 @@ stream = tweepy.Stream(auth, listener)
 while True:
     try:
         print('-------------- stream.filter ----------------')
+        sys.stdout.flush()
         stream.filter(track = ["#ストVラウンジ募集"]) # 指定の検索ワードでフィルタ
     except ProtocolError:
         print('-------------- ProtocolError -> continue ----------------')
+        sys.stdout.flush()
         continue
