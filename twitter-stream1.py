@@ -13,7 +13,7 @@ from urllib3.exceptions import ProtocolError
 import sys
 import datetime
 
-VERSION = 20210429005
+VERSION = 20210501001
 
 CK = CONFIG["CONSUMER_KEY"]     # Consumer Key
 CS = CONFIG["CONSUMER_SECRET"]  # Consumer Secret
@@ -35,8 +35,6 @@ class Listener(tweepy.StreamListener):  # StreamListenerを継承するクラス
     def on_status(self, status):
         if status.text.find('RT @') != 0:  # RTされた投稿は対象外 : RTは先頭に RT @NAME が追加される
             status.created_at += timedelta(hours=9)  # 世界標準時から日本時間に
-            print('-------------- status.text ----------------')
-            print(status.text)
             print('-------------- INFO ----------------')
             print("{name}({screen}) {created} via {src} retweeted={retweeted}\n".format(
                 name=status.author.name, screen=status.author.screen_name,
