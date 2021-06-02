@@ -44,7 +44,7 @@ class Listener(tweepy.StreamListener):  # StreamListenerを継承するクラス
             isBlackListUser = status.author.id in BLACK_LIST
 
             if isBlackListUser:
-                print("Black List User")
+                print("-------------- Black List User --------------")
                 sys.stdout.flush()
             else:
                 doRetweet(status.id)
