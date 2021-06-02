@@ -12,14 +12,16 @@ from config import CONFIG
 from urllib3.exceptions import ProtocolError
 import sys
 import datetime
+import blackList
 
-VERSION = 20210501001
+VERSION = 20210603001
 
 CK = CONFIG["CONSUMER_KEY"]     # Consumer Key
 CS = CONFIG["CONSUMER_SECRET"]  # Consumer Secret
 AT = CONFIG["ACCESS_TOKEN"]     # Access Token
 AS = CONFIG["ACCESS_SECRET"]    # Accesss Token Secert
 
+BLACK_LIST = blackList.BLACK_LIST
 
 def doRetweet(tweetId):
     try:
@@ -36,11 +38,17 @@ class Listener(tweepy.StreamListener):  # StreamListenerを継承するクラス
         if status.text.find('RT @') != 0:  # RTされた投稿は対象外 : RTは先頭に RT @NAME が追加される
             status.created_at += timedelta(hours=9)  # 世界標準時から日本時間に
             print('-------------- INFO ----------------')
-            print("{name}({screen}) {created} via {src} retweeted={retweeted}\n".format(
-                name=status.author.name, screen=status.author.screen_name,
-                created=status.created_at, src=status.source, retweeted=status.retweeted))
+            print("status.author.name = {author_name}, status.author.screen_name = {author_screen_name}, status.author.id = {status_author_id}, status.created_at = {status_created_at}\n".format(
+                author_name=status.author.name, author_screen_name=status.author.screen_name, status_author_id=status.author.id, status_created_at=status.created_at))
             sys.stdout.flush()
-            doRetweet(status.id)
+            isBlackListUser = status.author.id in BLACK_LIST
+
+            if isBlackListUser:
+                print("Black List User")
+                sys.stdout.flush()
+            else:
+                doRetweet(status.id)
+
         return True
 
     def on_error(self, status_code):
