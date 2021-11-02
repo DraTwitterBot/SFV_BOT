@@ -1,0 +1,65 @@
+
+-------------- INFO ----------------
+status.author.name = ガチくん, status.author.screen_name = xxx, status.author.id = xxx, status.created_at = 2021-08-19 02:14:37
+
+-------------- INFO ----------------
+status.author.name = しのd, status.author.screen_name = xxx, status.author.id = xxx, status.created_at = 2021-08-19 02:40:53
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/contrib/pyopenssl.py", line 294, in recv_into
+    return self.connection.recv_into(*args, **kwargs)
+  File "/usr/lib/python3/dist-packages/OpenSSL/SSL.py", line 1822, in recv_into
+    self._raise_ssl_error(self._ssl, result)
+  File "/usr/lib/python3/dist-packages/OpenSSL/SSL.py", line 1622, in _raise_ssl_error
+    raise WantReadError()
+OpenSSL.SSL.WantReadError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/urllib3/response.py", line 360, in _error_catcher
+    yield
+  File "/usr/lib/python3/dist-packages/urllib3/response.py", line 442, in read
+    data = self._fp.read(amt)
+  File "/usr/lib/python3.7/http/client.py", line 461, in read
+    n = self.readinto(b)
+  File "/usr/lib/python3.7/http/client.py", line 495, in readinto
+    return self._readinto_chunked(b)
+  File "/usr/lib/python3.7/http/client.py", line 590, in _readinto_chunked
+    chunk_left = self._get_chunk_left()
+  File "/usr/lib/python3.7/http/client.py", line 558, in _get_chunk_left
+    chunk_left = self._read_next_chunk_size()
+  File "/usr/lib/python3.7/http/client.py", line 518, in _read_next_chunk_size
+    line = self.fp.readline(_MAXLINE + 1)
+  File "/usr/lib/python3.7/socket.py", line 589, in readinto
+    return self._sock.recv_into(b)
+  File "/usr/lib/python3/dist-packages/urllib3/contrib/pyopenssl.py", line 307, in recv_into
+    raise timeout('The read operation timed out')
+socket.timeout: The read operation timed out
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "twitter-stream1.py", line 86, in <module>
+    stream.filter(track=["#ストVラウンジ募集"])  # 指定の検索ワードでフィルタ
+  File "/home/pi/.local/lib/python3.7/site-packages/tweepy/streaming.py", line 474, in filter
+    self._start(is_async)
+  File "/home/pi/.local/lib/python3.7/site-packages/tweepy/streaming.py", line 389, in _start
+    self._run()
+  File "/home/pi/.local/lib/python3.7/site-packages/tweepy/streaming.py", line 320, in _run
+    six.reraise(*exc_info)
+  File "/usr/lib/python3/dist-packages/six.py", line 693, in reraise
+    raise value
+  File "/home/pi/.local/lib/python3.7/site-packages/tweepy/streaming.py", line 289, in _run
+    self._read_loop(resp)
+  File "/home/pi/.local/lib/python3.7/site-packages/tweepy/streaming.py", line 339, in _read_loop
+    line = buf.read_line()
+  File "/home/pi/.local/lib/python3.7/site-packages/tweepy/streaming.py", line 200, in read_line
+    self._buffer += self._stream.read(self._chunk_size)
+  File "/usr/lib/python3/dist-packages/urllib3/response.py", line 459, in read
+    raise IncompleteRead(self._fp_bytes_read, self.length_remaining)
+  File "/usr/lib/python3.7/contextlib.py", line 130, in __exit__
+    self.gen.throw(type, value, traceback)
+  File "/usr/lib/python3/dist-packages/urllib3/response.py", line 365, in _error_catcher
+    raise ReadTimeoutError(self._pool, None, 'Read timed out.')
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='stream.twitter.com', port=443): Read timed out.
