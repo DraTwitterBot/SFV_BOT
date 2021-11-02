@@ -6,11 +6,13 @@
 # https://stackoverflow.com/questions/44378849/bypassing-the-incompleteread-exception
 #
 
+import sys
+sys.path.append('/home/pi/.local/lib/python3.7/site-packages')
+
 import tweepy
 from datetime import timedelta
 from config import CONFIG
 from urllib3.exceptions import ProtocolError
-import sys
 import datetime
 import blackList
 
