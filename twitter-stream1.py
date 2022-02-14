@@ -6,17 +6,16 @@
 # https://stackoverflow.com/questions/44378849/bypassing-the-incompleteread-exception
 #
 
+import blackList
+import datetime
+from urllib3.exceptions import ProtocolError
+from config import CONFIG
+from datetime import timedelta
+import tweepy
 import sys
 sys.path.append('/home/pi/.local/lib/python3.7/site-packages')
 
-import tweepy
-from datetime import timedelta
-from config import CONFIG
-from urllib3.exceptions import ProtocolError
-import datetime
-import blackList
-
-VERSION = 20210603001
+VERSION = 20220215001
 
 CK = CONFIG["CONSUMER_KEY"]     # Consumer Key
 CS = CONFIG["CONSUMER_SECRET"]  # Consumer Secret
@@ -25,9 +24,12 @@ AS = CONFIG["ACCESS_SECRET"]    # Accesss Token Secert
 
 BLACK_LIST = blackList.BLACK_LIST
 
+
 def doRetweet(tweetId):
     try:
         api.retweet(tweetId)  # Retweet
+        # print('------------- fake retweet -----------------')
+        # sys.stdout.flush()
     except Exception as e:
         print('------------- Exception -----------------')
         print(e)
@@ -39,14 +41,29 @@ class Listener(tweepy.StreamListener):  # StreamListenerを継承するクラス
     def on_status(self, status):
         if status.text.find('RT @') != 0:  # RTされた投稿は対象外 : RTは先頭に RT @NAME が追加される
             status.created_at += timedelta(hours=9)  # 世界標準時から日本時間に
-            print('-------------- INFO ----------------')
+            print('-------------- INFO start ----------------')
             print("status.author.name = {author_name}, status.author.screen_name = {author_screen_name}, status.author.id = {status_author_id}, status.created_at = {status_created_at}\n".format(
                 author_name=status.author.name, author_screen_name=status.author.screen_name, status_author_id=status.author.id, status_created_at=status.created_at))
-            sys.stdout.flush()
-            isBlackListUser = status.author.id in BLACK_LIST
+            print('-------------- INFO end ----------------')
 
-            if isBlackListUser:
-                print("-------------- Black List User --------------")
+            isBlackListUser = status.author.id in BLACK_LIST
+            isBlackListUserQuoted = False
+
+            if hasattr(status, 'quoted_status'):
+                print('-------------- Quoted INFO start ----------------')
+                print("status.quoted_status.author.name = {author_name}, status.quoted_status.author.screen_name = {author_screen_name}, status.quoted_status.author.id = {status_author_id}, status.quoted_status.created_at = {status_created_at}\n".format(
+                    author_name=status.quoted_status.author.name, author_screen_name=status.quoted_status.author.screen_name, status_author_id=status.quoted_status.author.id, status_created_at=status.quoted_status.created_at))
+
+                isBlackListUserQuoted = status.quoted_status.author.id in BLACK_LIST
+                print('-------------- Quoted INFO end ----------------')
+
+            sys.stdout.flush()
+
+            if isBlackListUser or isBlackListUserQuoted:
+                if isBlackListUser:
+                    print("-------------- author is Black --------------")
+                if isBlackListUserQuoted:
+                    print("-------------- quoted author is Black --------------")
                 sys.stdout.flush()
             else:
                 doRetweet(status.id)
@@ -86,6 +103,7 @@ while True:
         print(datetime.datetime.now())
         sys.stdout.flush()
         stream.filter(track=["#ストVラウンジ募集"])  # 指定の検索ワードでフィルタ
+        # stream.filter(track=["#draBotTest"])  # テスト用の検索ワード
     except ProtocolError:
         print('-------------- ProtocolError -> continue ----------------')
         print(datetime.datetime.now())
