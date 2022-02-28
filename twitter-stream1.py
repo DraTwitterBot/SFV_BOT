@@ -88,26 +88,33 @@ class Listener(tweepy.StreamListener):  # StreamListenerを継承するクラス
 print("ver = {ver} start!!".format(ver=VERSION))
 print(datetime.datetime.now())
 
-# Twitterオブジェクトの生成
-auth = tweepy.OAuthHandler(CK, CS)
-auth.set_access_token(AT, AS)
-api = tweepy.API(auth)
-
-# Listenerクラスのインスタンス
-listener = Listener()
-
-# 受信開始
-stream = tweepy.Stream(auth, listener)
-
 while True:
     try:
-        print('-------------- stream.filter ----------------')
-        print(datetime.datetime.now())
-        sys.stdout.flush()
-        stream.filter(track=["#ストVラウンジ募集"])  # 指定の検索ワードでフィルタ
-        # stream.filter(track=["#draBotTest"])  # テスト用の検索ワード
-    except ProtocolError:
-        print('-------------- ProtocolError -> continue ----------------')
-        print(datetime.datetime.now())
-        sys.stdout.flush()
+        # Twitterオブジェクトの生成
+        auth = tweepy.OAuthHandler(CK, CS)
+        auth.set_access_token(AT, AS)
+        api = tweepy.API(auth)
+
+        # Listenerクラスのインスタンス
+        listener = Listener()
+
+        # 受信開始
+        stream = tweepy.Stream(auth, listener)
+
+        while True:
+            try:
+                print('-------------- stream.filter ----------------')
+                print(datetime.datetime.now())
+                sys.stdout.flush()
+                stream.filter(track=["#ストVラウンジ募集"])  # 指定の検索ワードでフィルタ
+                # stream.filter(track=["#draBotTest"])  # テスト用の検索ワード
+            except ProtocolError:
+                # 再接続が不要な例外は、filterにハンドリング
+                print('-------------- ProtocolError -> continue ----------------')
+                print(datetime.datetime.now())
+                sys.stdout.flush()
+                continue
+    except Exception:
+        # 再接続が必要な例外は、再接続にハンドリング
+        print("Unexpected error:", sys.exc_info()[0])
         continue
