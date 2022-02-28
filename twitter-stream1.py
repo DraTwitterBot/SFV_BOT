@@ -17,7 +17,9 @@ from datetime import timedelta
 
 import tweepy
 
-VERSION = 20220215001
+VERSION = 20220301001
+
+DEBUG = False
 
 CK = CONFIG["CONSUMER_KEY"]     # Consumer Key
 CS = CONFIG["CONSUMER_SECRET"]  # Consumer Secret
@@ -29,9 +31,11 @@ BLACK_LIST = blackList.BLACK_LIST
 
 def doRetweet(tweetId):
     try:
-        api.retweet(tweetId)  # Retweet
-        # print('------------- fake retweet -----------------')
-        # sys.stdout.flush()
+        if DEBUG:
+            print('------------- fake retweet -----------------')
+            sys.stdout.flush()
+        else:
+            api.retweet(tweetId)  # Retweet
     except Exception as e:
         print('------------- Exception -----------------')
         print(e)
@@ -106,8 +110,10 @@ while True:
                 print('-------------- stream.filter ----------------')
                 print(datetime.datetime.now())
                 sys.stdout.flush()
-                stream.filter(track=["#ストVラウンジ募集"])  # 指定の検索ワードでフィルタ
-                # stream.filter(track=["#draBotTest"])  # テスト用の検索ワード
+                if DEBUG:
+                    stream.filter(track=["#draBotTest"])  # テスト用の検索ワード
+                else:
+                    stream.filter(track=["#ストVラウンジ募集"])  # 指定の検索ワードでフィルタ
             except ProtocolError:
                 # 再接続が不要な例外は、filterにハンドリング
                 print('-------------- ProtocolError -> continue ----------------')
