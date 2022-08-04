@@ -10,6 +10,7 @@ import sys
 sys.path.append('/home/pi/.local/lib/python3.7/site-packages')
 
 import blackList
+import ngWord
 import datetime
 from urllib3.exceptions import ProtocolError
 from config import CONFIG
@@ -17,7 +18,7 @@ from datetime import timedelta
 
 import tweepy
 
-VERSION = 20220301001
+VERSION = 20220804001
 
 DEBUG = False
 
@@ -27,7 +28,7 @@ AT = CONFIG["ACCESS_TOKEN"]     # Access Token
 AS = CONFIG["ACCESS_SECRET"]    # Accesss Token Secert
 
 BLACK_LIST = blackList.BLACK_LIST
-
+NG_WORD_LIST = ngWord.NG_WORD
 
 def doRetweet(tweetId):
     try:
@@ -55,21 +56,33 @@ class Listener(tweepy.StreamListener):  # StreamListenerを継承するクラス
             isBlackListUser = status.author.id in BLACK_LIST
             isBlackListUserQuoted = False
 
+            ngWordFlag = False
+            findNgWord = ""
+
             if hasattr(status, 'quoted_status'):
                 print('-------------- Quoted INFO start ----------------')
                 print("status.quoted_status.author.name = {author_name}, status.quoted_status.author.screen_name = {author_screen_name}, status.quoted_status.author.id = {status_author_id}, status.quoted_status.created_at = {status_created_at}\n".format(
                     author_name=status.quoted_status.author.name, author_screen_name=status.quoted_status.author.screen_name, status_author_id=status.quoted_status.author.id, status_created_at=status.quoted_status.created_at))
 
                 isBlackListUserQuoted = status.quoted_status.author.id in BLACK_LIST
+
+                for ngWord in NG_WORD_LIST :
+                    if ngWord in status.quoted_status.text :
+                        findNgWord = ngWord
+                        ngWordFlag = True
+                        break
+
                 print('-------------- Quoted INFO end ----------------')
 
             sys.stdout.flush()
 
-            if isBlackListUser or isBlackListUserQuoted:
+            if isBlackListUser or isBlackListUserQuoted or ngWordFlag:
                 if isBlackListUser:
                     print("-------------- author is Black --------------")
                 if isBlackListUserQuoted:
                     print("-------------- quoted author is Black --------------")
+                if ngWordFlag:
+                    print("-------------- quoted text in NG WORD = {ng_word} --------------".format(ng_word=findNgWord))
                 sys.stdout.flush()
             else:
                 doRetweet(status.id)
