@@ -9,16 +9,16 @@
 import sys
 sys.path.append('/home/pi/.local/lib/python3.7/site-packages')
 
-import blackList
-import ngWord
-import datetime
-from urllib3.exceptions import ProtocolError
-from config import CONFIG
-from datetime import timedelta
-
 import tweepy
+from datetime import timedelta
+from config import CONFIG
+from urllib3.exceptions import ProtocolError
+import datetime
+import ngWord
+import blackList
 
-VERSION = 20220804001
+
+VERSION = 20221015001
 
 DEBUG = False
 
@@ -26,9 +26,11 @@ CK = CONFIG["CONSUMER_KEY"]     # Consumer Key
 CS = CONFIG["CONSUMER_SECRET"]  # Consumer Secret
 AT = CONFIG["ACCESS_TOKEN"]     # Access Token
 AS = CONFIG["ACCESS_SECRET"]    # Accesss Token Secert
+BT = CONFIG["BEARER_TOKEN"]    # Accesss Token Secert
 
 BLACK_LIST = blackList.BLACK_LIST
 NG_WORD_LIST = ngWord.NG_WORD
+
 
 def doRetweet(tweetId):
     try:
@@ -36,7 +38,7 @@ def doRetweet(tweetId):
             print('------------- fake retweet -----------------')
             sys.stdout.flush()
         else:
-            api.retweet(tweetId)  # Retweet
+            client.retweet(tweetId)  # Retweet
     except Exception as e:
         print('------------- Exception -----------------')
         print(e)
@@ -44,7 +46,7 @@ def doRetweet(tweetId):
         sys.stdout.flush()
 
 
-class Listener(tweepy.StreamListener):  # StreamListenerを継承するクラスListener作成
+class StreamListener(tweepy.Stream):  # tweepy.Stream を継承するクラス StreamListener 作成
     def on_status(self, status):
         if status.text.find('RT @') != 0:  # RTされた投稿は対象外 : RTは先頭に RT @NAME が追加される
             status.created_at += timedelta(hours=9)  # 世界標準時から日本時間に
@@ -66,8 +68,8 @@ class Listener(tweepy.StreamListener):  # StreamListenerを継承するクラス
 
                 isBlackListUserQuoted = status.quoted_status.author.id in BLACK_LIST
 
-                for ngWord in NG_WORD_LIST :
-                    if ngWord in status.quoted_status.text :
+                for ngWord in NG_WORD_LIST:
+                    if ngWord in status.quoted_status.text:
                         findNgWord = ngWord
                         ngWordFlag = True
                         break
@@ -82,7 +84,8 @@ class Listener(tweepy.StreamListener):  # StreamListenerを継承するクラス
                 if isBlackListUserQuoted:
                     print("-------------- quoted author is Black --------------")
                 if ngWordFlag:
-                    print("-------------- quoted text in NG WORD = {ng_word} --------------".format(ng_word=findNgWord))
+                    print(
+                        "-------------- quoted text in NG WORD = {ng_word} --------------".format(ng_word=findNgWord))
                 sys.stdout.flush()
             else:
                 doRetweet(status.id)
@@ -108,15 +111,14 @@ print(datetime.datetime.now())
 while True:
     try:
         # Twitterオブジェクトの生成
-        auth = tweepy.OAuthHandler(CK, CS)
-        auth.set_access_token(AT, AS)
-        api = tweepy.API(auth)
+        client = tweepy.Client(consumer_key=CK, consumer_secret=CS,
+                               access_token=AT, access_token_secret=AS, bearer_token=BT)
 
         # Listenerクラスのインスタンス
-        listener = Listener()
-
-        # 受信開始
-        stream = tweepy.Stream(auth, listener)
+        streamlistener = StreamListener(
+            CK, CS,
+            AT, AS
+        )
 
         while True:
             try:
@@ -124,9 +126,10 @@ while True:
                 print(datetime.datetime.now())
                 sys.stdout.flush()
                 if DEBUG:
-                    stream.filter(track=["#draBotTest"])  # テスト用の検索ワード
+                    streamlistener.filter(track=["#draBotTest"])  # テスト用の検索ワード
                 else:
-                    stream.filter(track=["#ストVラウンジ募集"])  # 指定の検索ワードでフィルタ
+                    streamlistener.filter(
+                        track=["#ストVラウンジ募集"])  # 指定の検索ワードでフィルタ
             except ProtocolError:
                 # 再接続が不要な例外は、filterにハンドリング
                 print('-------------- ProtocolError -> continue ----------------')
